@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Starověké Řecko — Historická Mapa</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ol@9.2.4/ol.css">
+<script src="https://cdn.jsdelivr.net/npm/ol@9.2.4/dist/ol.js"></script>
+
+<style>
+  :root {
+    --parchment:     #e8d9b5;
+    --parchment-dark:#c9b98a;
+    --ink:           #2a1f0e;
+    --ink-light:     #5c4a2a;
+    --gold:          #b8860b;
+    --gold-light:    #d4a843;
+    --red-wax:       #8b2020;
+    --shadow:        rgba(42,31,14,0.55);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: #1a1408;
+    font-family: 'Crimson Text', Georgia, serif;
+    color: var(--ink);
+    overflow: hidden;
+    height: 100vh;
+  }
+
+  /* ── Border frame ── */
+  #frame {
+    position: fixed; inset: 0;
+    pointer-events: none; z-index: 50;
+    border: 14px solid transparent;
+    border-image: repeating-linear-gradient(
+      45deg,
+      var(--gold) 0px, var(--gold) 4px,
+      var(--parchment-dark) 4px, var(--parchment-dark) 8px,
+      var(--gold) 8px, var(--gold) 12px
+    ) 14;
+    box-shadow: inset 0 0 30px rgba(0,0,0,.45), 0 0 60px rgba(0,0,0,.9);
+  }
+
+  /* ── Map container ── */
+  #map {
+    width: 100%; height: 100vh;
+    filter: sepia(0.65) brightness(0.92) contrast(1.05);
+  }
+
+  /* ── Overlay canvas texture ── */
+  #map::after {
+    content:'';
+    position:absolute; inset:0;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.06'/%3E%3C/svg%3E");
+    pointer-events: none;
+    opacity: .35;
+    mix-blend-mode: multiply;
+  }
+
+  /* ── Title panel ── */
+  #title-panel {
+    position: fixed; top: 24px; left: 50%; transform: translateX(-50%);
+    background: linear-gradient(160deg, var(--parchment) 60%, var(--parchment-dark));
+    border: 2px solid var(--gold);
+    border-radius: 2px;
+    padding: 10px 36px 8px;
+    text-align: center;
+    box-shadow: 0 4px 20px var(--shadow);
+    z-index: 100;
+  }
+  #title-panel h1 {
+    font-family: 'Cinzel', serif;
+    font-size: 1.35rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    color: var(--ink);
+    text-transform: uppercase;
+    line-height: 1.2;
+  }
+  #title-panel p {
+    font-family: 'Crimson Text', serif;
+    font-size: 0.8rem;
+    font-style: italic;
+    color: var(--ink-light);
+    letter-spacing: 0.04em;
+    margin-top: 2px;
+  }
+  .title-rule {
+    width: 100%; height: 1px;
+    background: linear-gradient(90deg, transparent, var(--gold), transparent);
+    margin: 6px 0 4px;
+  }
+
+  /* ── Legend ── */
+  #legend {
+    position: fixed; bottom: 28px; left: 28px;
+    background: linear-gradient(160deg, var(--parchment) 60%, var(--parchment-dark));
+    border: 1.5px solid var(--gold);
+    padding: 12px 16px;
+    font-family: 'Cinzel', serif;
+    font-size: 0.68rem;
+    color: var(--ink);
+    box-shadow: 2px 4px 12px var(--shadow);
+    z-index: 100;
+    min-width: 140px;
+  }
+  #legend h3 {
+    font-size: 0.72rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    border-bottom: 1px solid var(--gold);
+    padding-bottom: 6px;
+    margin-bottom: 8px;
+  }
+  .legend-item { display: flex; align-items: center; gap: 8px; margin: 5px 0; }
+  .legend-dot {
+    width: 12px; height: 12px; border-radius: 50%;
+    border: 1.5px solid var(--ink);
+    flex-shrink: 0;
+  }
+
+  /* ── Compass rose ── */
+  #compass {
+    position: fixed; bottom: 28px; right: 28px;
+    width: 72px; height: 72px;
+    z-index: 100;
+    opacity: 0.85;
+  }
+
+  /* ── Popup ── */
+  .ol-popup {
+    position: absolute;
+    background: linear-gradient(150deg, var(--parchment) 60%, var(--parchment-dark));
+    border: 2px solid var(--gold);
+    padding: 0;
+    min-width: 230px;
+    max-width: 290px;
+    box-shadow: 4px 6px 20px var(--shadow);
+    border-radius: 2px;
+    transform: translate(-50%, calc(-100% - 20px));
+    pointer-events: auto;
+    font-family: 'Crimson Text', serif;
+    color: var(--ink);
+    animation: popIn .2s ease;
+  }
+  @keyframes popIn {
+    from { opacity:0; transform: translate(-50%, calc(-100% - 10px)) scale(0.96); }
+    to   { opacity:1; transform: translate(-50%, calc(-100% - 20px)) scale(1); }
+  }
+  .popup-arrow {
+    position: absolute; bottom: -10px; left: 50%; transform: translateX(-50%);
+    width: 0; height: 0;
+    border-left: 10px solid transparent;
+    border-right: 10px solid transparent;
+    border-top: 10px solid var(--gold);
+  }
+  .popup-header {
+    background: linear-gradient(90deg, var(--gold) 0%, var(--gold-light) 50%, var(--gold) 100%);
+    padding: 8px 14px 6px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .popup-header h2 {
+    font-family: 'Cinzel', serif;
+    font-size: 0.95rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    color: var(--ink);
+    text-transform: uppercase;
+  }
+  .popup-close {
+    background: none; border: none; cursor: pointer;
+    font-size: 1.1rem; color: var(--ink); line-height: 1;
+    padding: 0 2px;
+    font-family: serif;
+  }
+  .popup-close:hover { color: var(--red-wax); }
+  .popup-body { padding: 10px 14px 12px; }
+  .popup-greek {
+    font-style: italic; color: var(--ink-light);
+    font-size: 0.82rem; margin-bottom: 6px;
+    letter-spacing: 0.02em;
+  }
+  .popup-desc {
+    font-size: 0.88rem; line-height: 1.5;
+    border-top: 1px solid var(--parchment-dark);
+    padding-top: 7px;
+  }
+  .popup-tags {
+    display: flex; flex-wrap: wrap; gap: 4px;
+    margin-top: 8px;
+  }
+  .tag {
+    background: var(--parchment-dark);
+    border: 1px solid var(--gold);
+    padding: 2px 7px;
+    font-family: 'Cinzel', serif;
+    font-size: 0.58rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--ink-light);
+    border-radius: 1px;
+  }
+
+  /* ── Custom marker styles ── */
+  .marker-city    { background: #6b3a1f; }
+  .marker-oracle  { background: #5a1e5a; }
+  .marker-battle  { background: var(--red-wax); }
+  .marker-wonder  { background: var(--gold); }
+  .marker-island  { background: #1a5a4a; }
+</style>
+</head>
+<body>
+
+<div id="frame"></div>
+
+<div id="title-panel">
+  <h1>Ἑλλάς — Starověké Řecko</h1>
+  <div class="title-rule"></div>
+  <p>Helénský svět · cca 500 př. n. l.</p>
+</div>
+
+<div id="map"></div>
+
+<div id="legend">
+  <h3>Legenda</h3>
+  <div class="legend-item"><div class="legend-dot" style="background:#6b3a1f"></div><span>Město (polis)</span></div>
+  <div class="legend-item"><div class="legend-dot" style="background:#5a1e5a"></div><span>Věštírna</span></div>
+  <div class="legend-item"><div class="legend-dot" style="background:#8b2020"></div><span>Bitevní pole</span></div>
+  <div class="legend-item"><div class="legend-dot" style="background:#b8860b"></div><span>Div světa</span></div>
+  <div class="legend-item"><div class="legend-dot" style="background:#1a5a4a"></div><span>Ostrov</span></div>
+</div>
+
+<!-- SVG Compass rose -->
+<svg id="compass" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+  <circle cx="50" cy="50" r="46" fill="none" stroke="#b8860b" stroke-width="1.5" opacity="0.6"/>
+  <circle cx="50" cy="50" r="38" fill="rgba(232,217,181,0.15)" stroke="#b8860b" stroke-width="0.8" opacity="0.5"/>
+  <!-- N -->
+  <polygon points="50,6 45,50 50,44 55,50" fill="#8b2020"/>
+  <!-- S -->
+  <polygon points="50,94 45,50 50,56 55,50" fill="#5c4a2a"/>
+  <!-- E -->
+  <polygon points="94,50 50,45 56,50 50,55" fill="#5c4a2a"/>
+  <!-- W -->
+  <polygon points="6,50 50,45 44,50 50,55" fill="#5c4a2a"/>
+  <circle cx="50" cy="50" r="5" fill="#b8860b"/>
+  <circle cx="50" cy="50" r="2.5" fill="#2a1f0e"/>
+  <text x="50" y="20" text-anchor="middle" font-size="9" fill="#8b2020" font-family="Cinzel,serif" font-weight="700">N</text>
+</svg>
+
+<!-- Popup element -->
+<div id="popup" class="ol-popup" style="display:none;">
+  <div class="popup-header">
+    <h2 id="popup-title">—</h2>
+    <button class="popup-close" id="popup-close">✕</button>
+  </div>
+  <div class="popup-body">
+    <div class="popup-greek" id="popup-greek"></div>
+    <div class="popup-desc" id="popup-desc"></div>
+    <div class="popup-tags" id="popup-tags"></div>
+  </div>
+  <div class="popup-arrow"></div>
+</div>
+
+<script>
+// ── Historical places data ──────────────────────────────────────────
+const places = [
+  {
+    name: "Athénai",
+    greek: "Ἀθῆναι",
+    lon: 23.73, lat: 37.97,
+    type: "city",
+    desc: "Mocná demokratická polis, rodišté filosofie, demokracie a umění. Sídlo Akropole a Parthenónu zasvěceného bohyni Athéně.",
+    tags: ["Demokracie","Filosofie","Akropole"]
+  },
+  {
+    name: "Sparta",
+    greek: "Σπάρτη",
+    lon: 22.43, lat: 37.08,
+    type: "city",
+    desc: "Vojenský stát proslulý přísnou výchovou spartánských válečníků. Vládla Peloponnésu a soupeřila s Athénami.",
+    tags: ["Vojenství","Lakedaimón","Peloponnés"]
+  },
+  {
+    name: "Delfy",
+    greek: "Δελφοί",
+    lon: 22.50, lat: 38.48,
+    type: "oracle",
+    desc: "Posvátné místo boha Apollóna s proslulou věštírnou — omphalos, pupeční kámen světa. Sem přicházeli králové i prostý lid pro radu.",
+    tags: ["Apollón","Věštírna","Omphalos"]
+  },
+  {
+    name: "Olympia",
+    greek: "Ὀλυμπία",
+    lon: 21.63, lat: 37.64,
+    type: "wonder",
+    desc: "Posvátný okrsek Dia Olympského, místo konání her každé čtyři roky. Stála zde slavná Feidiova socha Dia z ivory a zlata.",
+    tags: ["Olympijské hry","Zeus","Feidias"]
+  },
+  {
+    name: "Korinthos",
+    greek: "Κόρινθος",
+    lon: 22.88, lat: 37.94,
+    type: "city",
+    desc: "Bohaté obchodní město ovládající šíji spojující pevninské Řecko s Peloponnésem. Proslulé výrobou keramiky a bronzových výrobků.",
+    tags: ["Obchod","Šíje","Korintský průplav"]
+  },
+  {
+    name: "Thermopyly",
+    greek: "Θερμοπύλαι",
+    lon: 22.53, lat: 38.80,
+    type: "battle",
+    desc: "Průsmyk, kde roku 480 př. n. l. král Leonidás s 300 Sparťany zadržoval perskou armádu Xerxa. Symbol hrdinské oběti.",
+    tags: ["480 př. n. l.","Leonidás","Xerxés"]
+  },
+  {
+    name: "Marathon",
+    greek: "Μαραθών",
+    lon: 23.96, lat: 38.15,
+    type: "battle",
+    desc: "Bitevní pole roku 490 př. n. l., kde Athéňané porazili perská vojska Dareia. Vítězná zpráva byla donesena do Athén slavným během.",
+    tags: ["490 př. n. l.","Dareios","Persie"]
+  },
+  {
+    name: "Théssaloniké",
+    greek: "Θεσσαλονίκη",
+    lon: 22.94, lat: 40.64,
+    type: "city",
+    desc: "Přístav u Termajského zálivu, pozdější centrum Makedonie. Brána do severního Řecka a k horám Olympu.",
+    tags: ["Makedonie","Přístav","Thermajský záliv"]
+  },
+  {
+    name: "Olympos",
+    greek: "Ὄλυμπος",
+    lon: 22.35, lat: 40.09,
+    type: "wonder",
+    desc: "Nejvyšší hora Řecka, sídlo dvanácti olympských bohů. Vrchol Mytikas dosahuje výšky 2 917 metrů nad mořem.",
+    tags: ["Bohové","Hora","2917 m"]
+  },
+  {
+    name: "Rhodos",
+    greek: "Ῥόδος",
+    lon: 28.22, lat: 36.43,
+    type: "island",
+    desc: "Ostrov obchodníků a námořníků. Rhodský kolos — obrovská bronzová socha boha slunce Hélia — patřil k sedmi divům světa.",
+    tags: ["Kolos","Hélios","Námořnictvo"]
+  },
+  {
+    name: "Kréta",
+    greek: "Κρήτη",
+    lon: 25.14, lat: 35.24,
+    type: "island",
+    desc: "Kolébka mínójské civilizace a labyrintu s Minotaurem. Největší řecký ostrov ovládaný mytickým králem Mínóem.",
+    tags: ["Mínójci","Labyrint","Minotauros"]
+  },
+  {
+    name: "Epidauros",
+    greek: "Ἐπίδαυρος",
+    lon: 23.07, lat: 37.60,
+    type: "wonder",
+    desc: "Svatyně Asklépia, boha léčení. Proslulé dokonalou akustikou antického divadla a místem léčby nemocných.",
+    tags: ["Asklépios","Divadlo","Léčení"]
+  },
+  {
+    name: "Efesos",
+    greek: "Ἔφεσος",
+    lon: 27.34, lat: 37.94,
+    type: "wonder",
+    desc: "Maloasijské město s Artemisiným chrámem — jedním z divů starověkého světa. Centrum kultu Artemidy a řeckého obchodu na východě.",
+    tags: ["Artemis","Artemisin chrám","Malá Asie"]
+  },
+  {
+    name: "Mykény",
+    greek: "Μυκῆναι",
+    lon: 22.76, lat: 37.73,
+    type: "city",
+    desc: "Legendární město krále Agamemnóna, vůdce řeckých vojsk u Tróje. Centrum mykénské civilizace s Lví bránou.",
+    tags: ["Agamemnón","Trója","Lví brána"]
+  },
+  {
+    name: "Byzantion",
+    greek: "Βυζάντιον",
+    lon: 28.98, lat: 41.01,
+    type: "city",
+    desc: "Strategická kolonická polis na Bosporu, na hranici Evropy a Asie. Pozdější Konstantinopolis, srdce východní říše.",
+    tags: ["Bosporos","Kolonista","Megara"]
+  },
+  {
+    name: "Akragas",
+    greek: "Ἀκράγας",
+    lon: 13.59, lat: 37.30,
+    type: "city",
+    desc: "Sicilská polis s nádherným Údolím chrámů. Jedna z největších a nejbohatších řeckých kolonií na Sicílii.",
+    tags: ["Sicílie","Chrámy","Kolonie"]
+  },
+];
+
+// ── Marker styles ────────────────────────────────────────────────────
+const typeColors = {
+  city:   '#6b3a1f',
+  oracle: '#5a1e5a',
+  battle: '#8b2020',
+  wonder: '#b8860b',
+  island: '#1a5a4a',
+};
+
+function createMarkerStyle(type, label) {
+  const color = typeColors[type] || '#333';
+  return new ol.style.Style({
+    image: new ol.style.Circle({
+      radius: 9,
+      fill: new ol.style.Fill({ color }),
+      stroke: new ol.style.Stroke({ color: '#e8d9b5', width: 2 }),
+    }),
+    text: new ol.style.Text({
+      text: label,
+      font: "bold 11px 'Cinzel', serif",
+      fill: new ol.style.Fill({ color: '#e8d9b5' }),
+      stroke: new ol.style.Stroke({ color: '#2a1f0e', width: 3 }),
+      offsetY: -18,
+      textAlign: 'center',
+    }),
+  });
+}
+
+// ── Build vector layer ───────────────────────────────────────────────
+const features = places.map(p => {
+  const f = new ol.Feature({
+    geometry: new ol.geom.Point(ol.proj.fromLonLat([p.lon, p.lat])),
+    data: p,
+  });
+  f.setStyle(createMarkerStyle(p.type, p.name));
+  return f;
+});
+
+const vectorSource = new ol.source.Vector({ features });
+const vectorLayer = new ol.layer.Vector({ source: vectorSource, zIndex: 10 });
+
+// ── Stamen Watercolor-inspired tile (using Stadia/Stamen) ─────────────
+// Using Stadia Maps Stamen Watercolor – historical-looking
+const tileLayer = new ol.layer.Tile({
+  source: new ol.source.XYZ({
+    url: 'https://tiles.stadiamaps.com/tiles/stamen_watercolor/{z}/{x}/{y}.jpg',
+    attributions: '© Stadia Maps, © Stamen Design, © OpenMapTiles, © OpenStreetMap contributors',
+    maxZoom: 16,
+  }),
+  opacity: 0.90,
+});
+
+// ── Map init ──────────────────────────────────────────────────────────
+const map = new ol.Map({
+  target: 'map',
+  layers: [tileLayer, vectorLayer],
+  view: new ol.View({
+    center: ol.proj.fromLonLat([23.5, 38.5]),
+    zoom: 6.4,
+    minZoom: 4,
+    maxZoom: 12,
+  }),
+  controls: ol.control.defaults.defaults({
+    zoom: true,
+    attribution: true,
+    rotate: false,
+  }),
+});
+
+// ── Popup logic ────────────────────────────────────────────────────────
+const popupEl = document.getElementById('popup');
+const popupOverlay = new ol.Overlay({
+  element: popupEl,
+  positioning: 'bottom-center',
+  stopEvent: true,
+  offset: [0, 0],
+});
+map.addOverlay(popupOverlay);
+
+function showPopup(coord, place) {
+  document.getElementById('popup-title').textContent = place.name;
+  document.getElementById('popup-greek').textContent = place.greek;
+  document.getElementById('popup-desc').textContent  = place.desc;
+  const tagsEl = document.getElementById('popup-tags');
+  tagsEl.innerHTML = place.tags.map(t => `<span class="tag">${t}</span>`).join('');
+  popupOverlay.setPosition(coord);
+  popupEl.style.display = 'block';
+}
+
+function hidePopup() {
+  popupEl.style.display = 'none';
+  popupOverlay.setPosition(undefined);
+}
+
+document.getElementById('popup-close').addEventListener('click', hidePopup);
+
+map.on('click', function(evt) {
+  const feature = map.forEachFeatureAtPixel(evt.pixel, f => f);
+  if (feature) {
+    const place = feature.get('data');
+    showPopup(evt.coordinate, place);
+  } else {
+    hidePopup();
+  }
+});
+
+// Change cursor on hover
+map.on('pointermove', function(evt) {
+  const hit = map.hasFeatureAtPixel(evt.pixel);
+  map.getTargetElement().style.cursor = hit ? 'pointer' : '';
+});
+</script>
+</body>
+</html>
