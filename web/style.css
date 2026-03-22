@@ -1,0 +1,233 @@
+:root {
+    --parchment:     #e8d9b5;
+    --parchment-dark:#c9b98a;
+    --ink:           #2a1f0e;
+    --ink-light:     #5c4a2a;
+    --gold:          #b8860b;
+    --gold-light:    #d4a843;
+    --red-wax:       #8b2020;
+    --shadow:        rgba(42,31,14,0.55);
+}
+
+*, *::before, *::after {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden; 
+    display: flex; 
+    justify-content: center;
+}
+
+.container {
+    padding: 0; margin: 0;
+    width: 100%;
+    height: 100vh;
+    padding: 0;
+}
+
+.container svg {
+    display: block;   /* odstraní inline mezeru (~4px) pod SVG */
+}
+
+circle {
+    r: 8;
+    cursor: pointer;
+}
+
+circle:hover {
+    r: 9;
+}
+
+/* Input year slider */
+.timeInput {
+    display: flex;
+    justify-content: end;
+    width: 100%;
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+}
+
+input[type=range] {
+  -webkit-appearance: none;
+  width: 50%;
+  max-width: 1100px;
+  background: transparent;
+  margin-right: 100px;
+}
+
+input[type=range]:focus {
+  outline: none; 
+}
+
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  height: 16px;
+  width: 16px;
+  border-radius: 50%;
+  background: var(--gold);
+  cursor: pointer;
+}
+
+input[type=range]::-webkit-slider-runnable-track {
+  height: 16px;
+  cursor: pointer;
+  border-radius: 20px;
+  background: var(--parchment);
+}
+
+/* ── Title panel ── */
+    header {
+        position: fixed; top: 24px; left: 50%; transform: translateX(-50%);
+        background: linear-gradient(160deg, var(--parchment) 60%, var(--parchment-dark));
+        border: 2px solid var(--gold);
+        border-radius: 2px;
+        padding: 10px 36px 8px;
+        text-align: center;
+        box-shadow: 0 4px 20px var(--shadow);
+        z-index: 100;
+    }
+
+    header h1 {
+        font-family: 'Cinzel', serif;
+        font-size: 1.35rem;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        color: var(--ink);
+        text-transform: uppercase;
+        line-height: 1.2;
+    }
+    header span{
+        font-family: 'Crimson Text', serif;
+        font-size: 0.8rem;
+        font-style: italic;
+        color: var(--ink-light);
+        letter-spacing: 0.04em;
+        margin-top: 2px;
+    }
+    .title-rule {
+        width: 100%; height: 1px;
+        background: linear-gradient(90deg, transparent, var(--gold), transparent);
+        margin: 6px 0 4px;
+    }
+    
+/* Sidebar */
+.sideBar {
+    position: fixed;
+    width: 30%;
+    height: 100%;
+    left: 0;
+    top: 0;
+    background: linear-gradient(160deg, var(--parchment) 60%, var(--parchment-dark));
+    border: 2px solid var(--gold);
+    overflow-y: auto;
+    visibility: hidden;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.sideBar .topContent h1 {
+    margin-top: 10px;
+    font-family: 'Cinzel', serif;
+    font-size: 1.35rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    color: var(--ink);
+    text-transform: uppercase;
+    line-height: 1.2;
+}
+
+.line {
+    width: 95%; height: 1px;
+    background: var(--gold);
+    margin: 10px 0 ;
+}
+
+.sideBar .img {
+    max-width: 90%;
+    margin: 10px 0;
+    border: 6px double var(--gold);
+}
+
+.mainText {
+    margin: 15px 0;
+    width: 90%;
+    height: auto;
+    text-align: justify ;
+    text-justify: inter-word;
+    font-family: 'Cinzel', serif;
+    font-size: 1rem;
+}
+
+.backButton {
+    position: fixed;
+    bottom: 1%;
+    left: 26%;
+    width: 3%;
+    fill: var(--gold);
+    height: auto;
+    cursor: pointer;
+}
+
+.fylozofove {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: auto;
+}
+
+.fylozofove .person {
+    width: 20%;
+    margin: 25px;
+    display: flex;
+    justify-content: start;
+    align-items: center;
+    flex-direction: column;
+    border-radius: 65px;
+    text-align: center;
+    cursor: pointer;
+}
+
+.person img {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    border: 4px solid black;
+    cursor: pointer;
+}
+
+.person h3 {
+    font-family: 'Crimson Text', serif;
+    font-size: 1.1rem;
+    font-style: bold;
+    color: var(--ink);
+    letter-spacing: 0.04em;
+    margin-bottom: 6px;
+    border: 2px solid var(--ink-light);
+    border-radius: 30px;
+    display: block;
+    background-color: var(--parchment-dark);
+    padding: 8px;
+    visibility: hidden;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    cursor: pointer;
+}
+
+
+/* Barvy regionu */
+#Ionie {
+    fill: white;
+}
+
