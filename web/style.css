@@ -302,15 +302,40 @@ input[type=range]::-webkit-slider-runnable-track {
     width: 95%;
     height: 95%;
     display: flex;
+    align-items: center;
     border-radius: 30px;
+    flex-direction: column;
 
     transform: scale(0.7);
     opacity: 0;
     transition: transform 0.35s ease, opacity 0.35s ease;
 }
 
+.popUpWin  h1 {
+    font-family: 'Cinzel', serif;
+    font-size: 1.6rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    color: var(--ink);
+    text-transform: uppercase;
+    line-height: 1.2;
+}
+
 /* animace při otevření */
 .popUpContainer.active .popUpWin {
     transform: scale(1);
     opacity: 1;
+}
+
+.nameContainer {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.nameContainer .underline {
+    background-color: var(--ink-light);
+    width: 120%;
+    height: 3px;
 }

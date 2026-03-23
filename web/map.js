@@ -202,13 +202,28 @@ function initDot(event) {
 
     //popUpWindow
     document.querySelector('.fylozofove').addEventListener('click', (e) => {
+        //show popUpWindow
         const person = e.target.closest('.person');
         if (!person) return;
 
-        const name = person.querySelector('h3').textContent;
-
         const popUpContainer = document.querySelector('.popUpContainer')
         popUpContainer.classList.add('active')
+
+        const popUpWin = popUpContainer.querySelector('.popUpWin')
+        const name = person.querySelector('h3').textContent;
+
+        const nameContainer = document.createElement('div') 
+        nameContainer.classList.add('nameContainer')
+
+        const nameEl = document.createElement('h1')
+        nameEl.textContent = name
+
+        const underlineEl = document.createElement('div')
+        underlineEl.classList.add('underline')
+
+        popUpWin.appendChild(nameContainer)
+        nameContainer.appendChild(nameEl)
+        nameContainer.appendChild(underlineEl)
     })
 
     showSideBar(sideBar)
