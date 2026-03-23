@@ -143,12 +143,12 @@ function initDot(event) {
     const e = dots.find(d => d.info.id === clickedId);
 
     if (!e) {return}
-
+    //slide bar
     //vykresleni info slozky
     const sideBar = document.querySelector('.sideBar')
 
-    if (sideBar) {
         //Horni cast
+    if (sideBar) {
         const h1 = sideBar.querySelector('.topContent h1')
         h1.textContent = e.info.name
 
@@ -187,14 +187,12 @@ function initDot(event) {
                 
                 Philozoph.addEventListener('mouseenter', () => {
                     pName.style.opacity = 1;
-                    // pName.style.display = 'block';
-                    pName.style.visibility = 'visible'; // správně
+                    pName.style.visibility = 'visible'; 
                 });
                 
                 Philozoph.addEventListener('mouseleave', () => {
                     pName.style.opacity = 0;
-                    // pName.style.display = 'none';
-                    pName.style.visibility = 'hidden'; // správně
+                    pName.style.visibility = 'hidden'; 
                 });
             });
         })
@@ -202,19 +200,28 @@ function initDot(event) {
 
     } else {return}
 
+    //popUpWindow
+    document.querySelector('.fylozofove').addEventListener('click', (e) => {
+        const person = e.target.closest('.person');
+        if (!person) return;
 
+        const name = person.querySelector('h3').textContent;
+
+        const popUpContainer = document.querySelector('.popUpContainer')
+        popUpContainer.classList.add('active')
+    })
 
     showSideBar(sideBar)
 }
 
 function showSideBar (element) {
-    element.style.display = 'flex'
-    element.style.visibility = 'visible'
+    element.classList.add('active')
+    backButtonSideBar.classList.add('active')
 }
 
 function hideSideBar (element) {
-    element.style.visibility = 'hidden'
-    element.style.display = 'none'
+    element.classList.remove('active')
+    backButtonSideBar.classList.remove('active')
 }
 
 
