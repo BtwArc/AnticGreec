@@ -15,7 +15,7 @@ const dots = [
                     "Po pádu režimu byl <b>odsouzen za zradu</b> a popraven.",
                     "Dochovalo se několik jeho řečí, například <b>\"O vraždě Heroda\"</b>.",
                     "Jeho práce jsou důležité pro poznání <b>athénského práva a rétoriky</b>."
-                    ]},
+                ]},
                 {name: "Amfikratés", id: "Amfikrates", headeImg: "./headImgs/noImage.jpg", color: "white", textContent: []},
                 {name: "Isokratés", id: "Isokrates", headeImg: "./headImgs/noImage.jpg", color: "white", textContent: []},
                 {name: "Kalliklés", id: "Kallikles", headeImg: "./headImgs/noImage.jpg", color: "white", textContent: []},
@@ -39,7 +39,8 @@ const dots = [
             {year: [-120, -86], color: "white"},
             {year: [-85, 31], color: "black"},
         ]
-    },{
+    },
+    {
         info: {
             name: "Milét",
             id: "Milet",
@@ -62,7 +63,8 @@ const dots = [
             {year: [-460, -399], color: "orange"},
             {year: [-398, 31], color: "black"}
         ]
-    },{
+    },
+    {
         info: {
             name: "Priéné",
             id: "Priene",
@@ -79,7 +81,8 @@ const dots = [
             {year: [-574, -530], color: "yellow"},
             {year: [-529, 31], color: "black"},
         ]
-    },{
+    },
+    {
         info: {
             name: "Himéra",
             id: "Himera",
@@ -147,16 +150,12 @@ year = -776
 currentTimeEl.textContent = year
 
 function initDot(event) {
-    //nadefinovani promenych
     const clickedId = event.target.id;
     const e = dots.find(d => d.info.id === clickedId);
+    if (!e) return
 
-    if (!e) {return}
-    //slide bar
-    //vykresleni info slozky
     const sideBar = document.querySelector('.sideBar')
 
-        //Horni cast
     if (sideBar) {
         const h1 = sideBar.querySelector('.topContent h1')
         h1.textContent = e.info.name
@@ -167,12 +166,10 @@ function initDot(event) {
         const cityText = sideBar.querySelector('.mainText p')
         cityText.innerHTML = e.info.mainText
 
-        //Dolni cast
         const pElement = document.querySelector('.fylozofove')
         pElement.innerHTML = ''
 
-        const fylozofove = e.info.person
-        fylozofove.forEach(fylozof => {
+        e.info.person.forEach(fylozof => {
             const personDiv = document.createElement('div')
             personDiv.classList.add('person')
             personDiv.id = fylozof.id
@@ -188,37 +185,17 @@ function initDot(event) {
             personDiv.appendChild(pH3)
             personDiv.appendChild(pImg)
             pElement.appendChild(personDiv)
-
-            const Philozophs = document.querySelectorAll('.fylozofove .person');
-
-            Philozophs.forEach(Philozoph => {
-                const pName = Philozoph.querySelector('h3');
-                
-                Philozoph.addEventListener('mouseenter', () => {
-                    pName.style.opacity = 1;
-                    pName.style.visibility = 'visible'; 
-                });
-                
-                Philozoph.addEventListener('mouseleave', () => {
-                    pName.style.opacity = 0;
-                    pName.style.visibility = 'hidden'; 
-                });
-            });
         })
+    }
 
-
-    } else {return}
-
-    //popUpWindow
     document.querySelector('.fylozofove').addEventListener('click', (e) => {
-        //show popUpWindow
         const person = e.target.closest('.person');
         if (!person) return;
 
         const popUpContainer = document.querySelector('.popUpContainer')
-        popUpContainer.classList.add('active')
-
         const popUpWin = popUpContainer.querySelector('.popUpWin')
+        popUpWin.innerHTML = ''
+
         const name = person.querySelector('h3').textContent;
 
         const nameContainer = document.createElement('div') 
@@ -237,7 +214,6 @@ function initDot(event) {
         svg.setAttribute("viewBox", "0 0 32 32");
 
         const g = document.createElementNS(svgNS, "g");
-        g.setAttribute("id", "popUpBackButton");
 
         const path = document.createElementNS(svgNS, "path");
         path.setAttribute("d", "M14.389 7.956v4.374l1.056 0.010c7.335 0.071 11.466 3.333 12.543 9.944-4.029-4.661-8.675-4.663-12.532-4.664h-1.067v4.337l-9.884-7.001 9.884-7zM15.456 5.893l-12.795 9.063 12.795 9.063v-5.332c5.121 0.002 9.869 0.26 13.884 7.42 0-4.547-0.751-14.706-13.884-14.833v-5.381z");
@@ -249,7 +225,6 @@ function initDot(event) {
         nameContainer.appendChild(nameEl)
         nameContainer.appendChild(underlineEl)
 
-        // najdi filozofa v datech podle jmena
         const personId = person.id
         const dotData = dots.find(d => d.info.id === clickedId)
         const filozofData = dotData?.info.person.find(p => p.id === personId);
@@ -265,20 +240,19 @@ function initDot(event) {
             cardsDiv.appendChild(ul)
 
             liData.forEach((liText) => {
-                console.log(liText)
                 let liEl = document.createElement('li')
                 liEl.innerHTML = liText  
-
                 ul.appendChild(liEl)
             })
         }
-    popUpWin.appendChild(svg);
 
-    svg.addEventListener('click', () => {
-        hidePopUp(popUpContainer)
-        console.log("hide")
-    })
-    showPopUp(popUpContainer)
+        popUpWin.appendChild(svg);
+
+        svg.addEventListener('click', () => {
+            hidePopUp(popUpContainer)
+        })
+
+        showPopUp(popUpContainer)
     })
 
     showSideBar(sideBar)
@@ -296,14 +270,11 @@ function hideSideBar (element) {
 
 function showPopUp (element) {
     element.classList.add('active')
-    document.querySelector('#popUpBackButton').classList.add('active')
 }
 
 function hidePopUp (element) {
     element.classList.remove('active')
-    document.querySelector('#popUpBackButton').classList.remove('active')
 }
-
 
 const circles = document.querySelectorAll('circle');
 
@@ -315,22 +286,3 @@ const backButtonSideBar = document.querySelector('#sideBarBackButton')
 backButtonSideBar.addEventListener('click', () => {
     hideSideBar(document.querySelector('.sideBar'))
 })
-
-
-const Philozophs = document.querySelectorAll('.fylozofove .person');
-
-Philozophs.forEach(Philozoph => {
-    const pName = Philozoph.querySelector('h3');
-    
-    Philozoph.addEventListener('mouseenter', () => {
-        pName.style.opacity = 1;
-        pName.style.display = 'block';
-        pName.style.visibility = 'visible'; // správně
-    });
-    
-    Philozoph.addEventListener('mouseleave', () => {
-        pName.style.opacity = 0;
-        pName.style.display = 'none';
-        pName.style.visibility = 'hidden'; // správně
-    });
-});

@@ -285,20 +285,15 @@ input[type=range]::-webkit-slider-runnable-track {
     
     opacity: 0;
     visibility: hidden;
-    transition: opacity 0.3s ease;
+    pointer-events: none;
+    transition: opacity 0.35s ease, visibility 0.35s ease;
 }
 
 /* aktivní stav */
 .popUpContainer.active {
     opacity: 1;
     visibility: visible;
-    display: block;
-}
-
-.popUpContainer {
-    opacity: 0;
-    visibility: hidden;
-    display: none;
+    pointer-events: auto;
 }
 
 .popUpWin{
@@ -313,9 +308,9 @@ input[type=range]::-webkit-slider-runnable-track {
     border-radius: 30px;
     flex-direction: column;
 
-    transform: scale(0.7);
+    transform: scale(0.7) translateY(40px);
     opacity: 0;
-    transition: transform 0.35s ease, opacity 0.35s ease;
+    transition: transform 0.4s ease, opacity 0.4s ease;
 }
 
 .popUpWin  h1 {
@@ -328,9 +323,8 @@ input[type=range]::-webkit-slider-runnable-track {
     line-height: 1.2;
 }
 
-/* animace při otevření */
 .popUpContainer.active .popUpWin {
-    transform: scale(1);
+    transform: scale(1) translateY(0);
     opacity: 1;
 }
 
