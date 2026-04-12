@@ -185,6 +185,17 @@ function initDot(event) {
             personDiv.appendChild(pH3)
             personDiv.appendChild(pImg)
             pElement.appendChild(personDiv)
+
+            personDiv.addEventListener('mouseenter', () => {
+                pH3.style.visibility = 'visible';
+                pH3.style.opacity = '1';
+            });
+
+            personDiv.addEventListener('mouseleave', () => {
+                pH3.style.visibility = 'hidden';
+                pH3.style.opacity = '0';
+            });
+
         })
     }
 
