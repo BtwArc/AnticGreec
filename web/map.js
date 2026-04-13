@@ -262,11 +262,36 @@ function initDot(event) {
         svg.addEventListener('click', () => {
             hidePopUp(popUpContainer)
         })
-
         showPopUp(popUpContainer)
     })
 
     showSideBar(sideBar)
+}
+let tooltip;
+
+function showDotName(event) {
+    const hoveredId = event.currentTarget.id;
+    const dot = dots.find(d => d.info.id === hoveredId);
+    if (!dot) return;
+
+    if (!tooltip) {
+        tooltip = document.createElement('div');
+        tooltip.classList.add('tooltip');
+        document.body.appendChild(tooltip);
+    }
+
+    tooltip.textContent = dot.info.name;
+
+    tooltip.style.left = event.pageX - 25 + 'px';
+    tooltip.style.top = event.pageY - 40 + 'px';
+
+    tooltip.classList.add('visible');
+}
+
+function hideDotName() {
+    if (tooltip) {
+        tooltip.classList.remove('visible');
+    }
 }
 
 function showSideBar (element) {
@@ -291,6 +316,8 @@ const circles = document.querySelectorAll('circle');
 
 circles.forEach(circle => {
     circle.addEventListener('click', initDot);
+    circle.addEventListener('mouseenter', showDotName)
+    circle.addEventListener('mouseleave', hideDotName)
 });
 
 const backButtonSideBar = document.querySelector('#sideBarBackButton')

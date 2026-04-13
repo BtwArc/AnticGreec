@@ -5,13 +5,17 @@ function InitMapZoom () {
 
     const ZOOM_FACTOR = 0.2
     const MIN_SCALE = 0.1
-    const MAX_SCALE = 0.8
+    const MAX_SCALE = 0.6
     const INITIAL_ZOOM = 0.4
 
     const originalX = viewBox.x
     const originalY = viewBox.y
     const originalW = viewBox.w
     const originalH = viewBox.h
+
+    let isPanning = false
+    let startPoint = { x: 0, y: 0 }
+    let startViewBox = { ...viewBox }
 
     // INITIAL ZOOM (centered)
     const centerX = viewBox.x + viewBox.w / 2
@@ -50,7 +54,7 @@ function InitMapZoom () {
     svg.addEventListener('mousedown', (e) => {
         if (e.button !== 0) return
         isPanning = true
-        startPoint = clientToSvgPoint(svg, e.clientX, e.clientY)
+        startPoint = { x: e.clientX, y: e.clientY }
         startViewBox = { ...viewBox }
         svg.style.cursor = 'grabbing'
         e.preventDefault()
@@ -59,10 +63,15 @@ function InitMapZoom () {
     window.addEventListener('mousemove', (e) => {
         if (!isPanning) return
 
-        const current = clientToSvgPoint(svg, e.clientX, e.clientY)
+        const rect = svg.getBoundingClientRect()
+        const scaleX = viewBox.w / rect.width
+        const scaleY = viewBox.h / rect.height
 
-        viewBox.x = startViewBox.x - (current.x - startPoint.x)
-        viewBox.y = startViewBox.y - (current.y - startPoint.y)
+        const dx = (e.clientX - startPoint.x) * scaleX
+        const dy = (e.clientY - startPoint.y) * scaleY
+
+        viewBox.x = startViewBox.x - dx
+        viewBox.y = startViewBox.y - dy
 
         clampViewBox()
         applyViewBox()
